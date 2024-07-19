@@ -13,6 +13,8 @@ public:
     map<string, map<string, double>> compute();
     set<string> documents();
     vector<pair<string, double>> getKeywordOf(const string &id, int size);
+    vector<pair<string, double>> topN(map<string, double> tfidfs, int size);
+    vector<pair<string, double>> getKeywordsWithTfIdf(vector<string> document, int size);
 
     map<string, map<string, double>> tfMap;
     map<string, map<string, double>> tfidfMap;

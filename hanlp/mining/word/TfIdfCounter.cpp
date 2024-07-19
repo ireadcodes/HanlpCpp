@@ -35,6 +35,10 @@ set<string> TfIdfCounter::documents() {
 
 vector<pair<string, double>> TfIdfCounter::getKeywordOf(const string &id, int size) {
     auto tfidfs = tfidfMap[id];
+    return topN(tfidfs, size);
+}
+
+vector<pair<string, double>> TfIdfCounter::topN(map<string, double> tfidfs, int size) {
     vector<pair<string, double>> sortedVec;
     for (const auto & item : tfidfs) {
         sortedVec.emplace_back(item);
@@ -42,4 +46,10 @@ vector<pair<string, double>> TfIdfCounter::getKeywordOf(const string &id, int si
     sort(sortedVec.begin(), sortedVec.end(), [](const pair<string, double> &a, const pair<string, double> &b){ return a.second > b.second; });
     vector<pair<string, double>> result(sortedVec.begin(), sortedVec.begin() + size);
     return result;
+}
+
+vector<pair<string, double>> TfIdfCounter::getKeywordsWithTfIdf(vector<string> document, int size) {
+    if (idf.empty()) compute();
+    auto tfidfs = TfIdf::tfidf(TfIdf::tfNatural(document), idf);
+    return topN(tfidfs, size);
 }
