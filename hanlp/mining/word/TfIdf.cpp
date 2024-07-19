@@ -25,11 +25,10 @@ map<string, double> TfIdf::idfFromTfs(vector<map<string, double> > &tfs) {
 }
 
 map<string, double> TfIdf::idf(vector<vector<string> > &documentVocabularies, bool smooth, bool addOne) {
-    // 这里的df是计算词语在整个语料库中的词频
+    // 这里的df计算词汇在整个语料库中的词频，因为前面对单篇文章的词汇去重了，所以就得到了包含该词条的文档数量
     map<string, int> df;
     int d = smooth ? 1 : 0;
     int a = addOne ? 1 : 0;
-    // n代表文档数量
     int n = d;
     for (const auto &documentVocabulary: documentVocabularies) {
         n += 1;
@@ -43,7 +42,7 @@ map<string, double> TfIdf::idf(vector<vector<string> > &documentVocabularies, bo
     for (const auto & e : df) {
         string term = e.first;
         double f = e.second;
-        // 计算idf值
+        // 计算idf值，n代表文档数量，f代表包含该词条的文档数量
         idf[term] = std::log(n / f) + a;
     }
     return idf;

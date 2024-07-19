@@ -14,6 +14,7 @@ void TfIdfCounter::add(const string &id, vector<string> words) {
 
 map<string, map<string, double>> TfIdfCounter::compute() {
     vector<map<string, double>> values;
+    // 这里使用tfMap键存储词条相当于对同一篇文章中的相同词汇去重了
     for (const auto & item : tfMap) {
         values.push_back(item.second);
     }
