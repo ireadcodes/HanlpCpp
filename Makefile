@@ -1,6 +1,6 @@
 CC := g++
 CFLAGS := -g -Wall -O0 -static-libgcc -static-libstdc++
-CPPFLAGS := $(CFLAGS) -std=c++11
+CPPFLAGS := $(CFLAGS) -std=c++17
 CPPFLAGS += -I.
 
 TEST_DIR := test
