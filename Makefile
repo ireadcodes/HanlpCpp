@@ -6,13 +6,13 @@ CPPFLAGS += -I.
 TEST_DIR := test
 TEST_SUBDIRS := $(shell find $(TEST_DIR) -type d)
 TEST_FILES := $(foreach dir,$(TEST_SUBDIRS),$(wildcard $(dir)/*.cpp))
-TARGETS := $(TEST_FILES:.cpp=)
+TARGETS := $(TEST_FILES:.cpp=.out)
 
 .PHONY: all clean
 
 all: $(TARGETS)
 
-%: %.cpp
+%.out: %.cpp
 	$(CC) $(CPPFLAGS) $^ -o $@
 
 clean:
