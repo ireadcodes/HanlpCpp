@@ -7,7 +7,7 @@
 
 int main() {
     std::vector<std::string> docs;
-    std::ifstream file("./data/三国演义.txt");
+    std::ifstream file("../../data/三国演义.txt");
     if (!file.is_open()) {
         std::cerr << "File cannot find!" << std::endl;
         return -1;
