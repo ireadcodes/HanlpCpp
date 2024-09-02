@@ -1,5 +1,5 @@
-CC := g++
-CFLAGS := -g -Wall -O0 -static-libgcc -static-libstdc++
+CC := clang++
+CFLAGS := -g -Wall -O0
 CPPFLAGS := $(CFLAGS) -std=c++17
 CPPFLAGS += -I.
 LDFLAGS :=
