@@ -2,20 +2,19 @@
 #define NEWWORDDISCOVER_H
 
 #include <algorithm>
+#include <memory>
 #include <queue>
 #include <regex>
 #include <string>
-#include <codecvt>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 
 #include "hanlp/mining/word/WordInfo.h"
 
 struct CompareWordInfo {
-    bool operator()(std::shared_ptr<WordInfo> a, std::shared_ptr<WordInfo> b) {
+    bool operator()(const std::shared_ptr<WordInfo>& a, const std::shared_ptr<WordInfo>& b) const {
         // 按照p值从大到小排序
-        return a->p < b->p;
+        return a->p > b->p;
     }
 };
 
@@ -30,15 +29,16 @@ public:
     std::vector<WordInfo> discover(const std::vector<std::wstring>& docs, unsigned int size) {
         std::unordered_map<std::wstring, std::shared_ptr<WordInfo>> word_candidates;
         int total_length = 0;
-        std::wregex delimiter(L"[\\s\\d,.<>/?:;'\"\\[\\]{}()|~!@#$%^&*\\-_=+，。《》、？：；“”‘’｛｝【】（）…￥！—┄－]+");
+        const std::wregex delimiter(L"[\\s\\d,.<>/?:;'\"\\[\\]{}()|~!@#$%^&*\\-_=+，。《》、？：；“”‘’｛｝【】（）…￥！—┄－]+");
         for (const std::wstring& doc : docs) {
-            std::wstring modified_doc = std::regex_replace(doc, delimiter, L"\0");
+            // 原本算法用的是\u0000分隔字符串，但c++中替换后改变了doc_length，所以改用空格\u0020
+            std::wstring modified_doc = std::regex_replace(doc, delimiter, L"\u0020");
             int doc_length = modified_doc.size();
             for (int i = 0; i < doc_length; i++) {
                 int end = std::min(i + 1 + max_word_len, doc_length + 1);
                 for (int j = i + 1; j < end; j++) {
                     std::wstring word = modified_doc.substr(i, j - i);
-                    if (word.find(L'\0') != std::string::npos) {
+                    if (word.find(L'\u0020') != std::string::npos) {
                         continue;  // 含有分隔符的不认为是词语
                     }
                     if (word_candidates.find(word) == word_candidates.end()) {
@@ -47,19 +47,19 @@ public:
                     }
                     // wordCandidates[word]需要WordInfo的无参构造函数
                     std::shared_ptr<WordInfo> info = word_candidates[word];
-                    info->update(i == 0 ? L'\0' : doc[i - 1], j < doc_length ? doc[j] : L'\0');
+                    info->update(i == 0 ? L'\u0020' : modified_doc[i - 1], j < doc_length ? modified_doc[j] : L'\u0020');
                 }
             }
             total_length += doc_length;
         }
-        assert(word_candidates[L"『"]->text == L"『");
-        assert(word_candidates[L"『三"]->text == L"『三");
-        assert(word_candidates[L"『三国"]->text == L"『三国");
-        assert(word_candidates[L"『三国演"]->text == L"『三国演");
-        assert(word_candidates[L"三"]->text == L"三");
-        assert(word_candidates[L"三国"]->text == L"三国");
-        assert(word_candidates[L"三国演"]->text == L"三国演");
-        assert(word_candidates[L"三国演义"]->text == L"三国演义");
+        assert(word_candidates[L"『"]->text.compare(L"『") == 0);
+        assert(word_candidates[L"『三"]->text.compare(L"『三") == 0);
+        assert(word_candidates[L"『三国"]->text.compare(L"『三国") == 0);
+        assert(word_candidates[L"『三国演"]->text.compare(L"『三国演") == 0);
+        assert(word_candidates[L"三"]->text.compare(L"三") == 0);
+        assert(word_candidates[L"三国"]->text.compare(L"三国") == 0);
+        assert(word_candidates[L"三国演"]->text.compare(L"三国演") == 0);
+        assert(word_candidates[L"三国演义"]->text.compare(L"三国演义") == 0);
 
         // 计算信息熵
         for (auto& pair : word_candidates) {
@@ -71,7 +71,7 @@ public:
         }
 
         // 过滤
-        auto condition = [&](std::shared_ptr<WordInfo> info) {
+        auto condition = [&](const std::shared_ptr<WordInfo>& info) {
             return info->text.size() < 2 || info->p < min_freq || info->entropy < min_entropy || info->aggregation < min_aggregation;
         };
         std::vector<std::shared_ptr<WordInfo>> word_info_list;
@@ -83,7 +83,7 @@ public:
 
         // 使用优先队列得到前size个元素
         std::priority_queue<std::shared_ptr<WordInfo>, std::vector<std::shared_ptr<WordInfo>>, CompareWordInfo> top_n;
-        for (auto info : word_info_list) {
+        for (const auto& info : word_info_list) {
             top_n.push(info);
             // 保持堆大小为 size
             if (top_n.size() > size) {
