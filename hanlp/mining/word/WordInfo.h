@@ -11,7 +11,12 @@
 
 class WordInfo {
 public:
-    explicit WordInfo(std::wstring text) : text(std::move(text)) {
+    explicit WordInfo(const std::wstring& text) : text(text) {
+        p = 0;
+        frequency = 0;
+        entropy = 0;
+        left_entropy = 0;
+        right_entropy = 0;
         aggregation = std::numeric_limits<double>::max();
     }
 
@@ -43,26 +48,19 @@ public:
     }
 
     void computeProbobilityEntropy(const int length) {
+        if (text.compare(L"三国") == 0) {
+            assert(left[L'为'][0] == 1);
+            assert(left[L' '][0] == 1);
+            assert(right[L'演'][0] == 1);
+            assert(right[L' '][0] == 1);
+        }
         p = static_cast<double>(frequency) / static_cast<double>(length);
         left_entropy = computeEntropy(left);
         right_entropy = computeEntropy(right);
         entropy = std::min(left_entropy, right_entropy);
-        if (text.compare(L"三国") == 0) {
-            assert(left[L'『'][0] == 1);
-            assert(left[L'为'][0] == 1);
-            assert(left[L'倾'][0] == 1);
-            assert(left[L'分'][0] == 2);
-            assert(left[L'此'][0] == 1);
-            assert(left[L'\u0020'][0] == 1);
-            assert(right[L'演'][0] == 1);
-            assert(right[L'著'][0] == 1);
-            assert(right[L'各'][0] == 1);
-            assert(right[L'归'][0] == 1);
-            assert(right[L'\u0020'][0] == 3);
-        }
     }
 
-    void computeAggregation(const std::unordered_map<std::wstring, std::shared_ptr<WordInfo>>& wordCands) {
+    void computeAggregation(const std::unordered_map<std::wstring, std::shared_ptr<WordInfo>>& word_cands) {
         // 单个字
         if (text.size() == 1) {
             aggregation = std::sqrt(p);
@@ -72,13 +70,14 @@ public:
         for (std::size_t i = 1; i < text.size(); i++) {
             std::wstring left_text = text.substr(0, i);
             std::wstring right_text = text.substr(i);
-            aggregation = std::min(aggregation, p / wordCands.at(left_text)->p / wordCands.at(right_text)->p);
+            aggregation = std::min(aggregation, p / word_cands.at(left_text)->p / word_cands.at(right_text)->p);
         }
     }
 
 public:
     // 词语，UTF-8字符串用wstring
     std::wstring text;
+    // 词出现的频率
     double p;
     // 互信息
     double aggregation;
