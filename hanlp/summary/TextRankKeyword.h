@@ -33,9 +33,6 @@ public:
         std::unordered_map<std::string, std::unordered_set<std::string>> words;
         std::deque<std::string> que;
         for (const std::string& w : word_list) {
-            if (words.find(w) == words.end()) {
-                words[w] = {};
-            }
             // 保证窗口中只有5个词
             if (que.size() >= 5) {
                 que.pop_front();
